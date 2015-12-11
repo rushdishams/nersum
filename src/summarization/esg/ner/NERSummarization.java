@@ -83,35 +83,9 @@ public class NERSummarization {
 		return sentences;
 	}
 	
-	public static void main(String[] args) throws Exception {
-
-		NERSummarization nerSum = new NERSummarization(args[0]);
-		nerSum.parseFiles();
-		String[] contents = nerSum.getArticleContents();
-		for(String content: contents){
-			String[] sentences = nerSum.extractSentence(content);
-			System.out.println(Arrays.arrayToString(sentences));
-			System.out.println("====");
-		}
-
-
-
-
-
-		/* For the hard-coded String, it shows how to run it on a single
-         sentence, and how to do this and produce several formats, including
-         slash tags and an inline XML output format. It also shows the full
-         contents of the {@code CoreLabel}s that are constructed by the
-         classifier. And it shows getting out the probabilities of different
-         assignments and an n-best list of classifications with probabilities.
-		 */
-
-		String[] example = {"Good afternoon Rajat Raina and rushdi shams, how are you today?",
-		"I go to school at Stanford University, which is located in california." };
-
-
+	public void extractNER(String[] articleSentences){
 		int j = 0;
-		for (String str : example) {
+		for (String str : articleSentences) {
 			j++;
 			List<Triple<String,Integer,Integer>> triples = classifier.classifyToCharacterOffsets(str);
 			for (Triple<String,Integer,Integer> trip : triples) {
@@ -120,7 +94,19 @@ public class NERSummarization {
 			}
 		}
 		System.out.println("---");
+	}
+	
+	public static void main(String[] args) throws Exception {
 
+		NERSummarization nerSum = new NERSummarization(args[0]);
+		nerSum.parseFiles();
+		String[] contents = nerSum.getArticleContents();
+		for(String content: contents){
+			String[] sentences = nerSum.extractSentence(content);
+			/*System.out.println(Arrays.arrayToString(sentences));
+			System.out.println("====");*/
+			nerSum.extractNER(sentences);
+		}
 
 	}
 
