@@ -13,6 +13,9 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
+import com.aliasi.util.Arrays;
+import com.boundary.sentence.TextContent;
+
 
 /** This is a demo of calling CRFClassifier programmatically.
  *  <p>
@@ -72,14 +75,23 @@ public class NERSummarization {
 		return articleContents;
 	}
 	
+	public String[] extractSentence(String content){
+		TextContent t = new TextContent(); //creating TextContent object
+		t.setText(content);
+		t.setSentenceBoundary();
+		String[] sentences = t.getSentence();
+		return sentences;
+	}
+	
 	public static void main(String[] args) throws Exception {
 
 		NERSummarization nerSum = new NERSummarization(args[0]);
 		nerSum.parseFiles();
 		String[] contents = nerSum.getArticleContents();
-		for(String str: contents){
-			System.out.println(str);
-			System.out.println("=====================");
+		for(String content: contents){
+			String[] sentences = nerSum.extractSentence(content);
+			System.out.println(Arrays.arrayToString(sentences));
+			System.out.println("====");
 		}
 
 
