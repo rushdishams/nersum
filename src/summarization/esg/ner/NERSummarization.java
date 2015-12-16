@@ -97,6 +97,8 @@ public class NERSummarization {
 		for (String sentence : articleSentences) {
 			groupOne[j] = 0;
 			groupTwo[j] = 0;
+			
+//			articleSentences[j] = removeGarbage(articleSentences[j]);
 
 			List<Triple<String, Integer, Integer>> triples = classifier.classifyToCharacterOffsets(sentence);
 			
@@ -143,19 +145,22 @@ public class NERSummarization {
 		int[] finalGroupTwo = new int[groupTwo.length];
 		for(int i = 0; i < 5; i++){
 			int max = Arrays.stream(groupOne).max().getAsInt();
+			if(max > 0){
 			for (int x = 0; x < groupOne.length; x++){
 				if(groupOne[x] == max){
 					groupOne[x] = 0;
 					finalGroupOne[x] = max;
 				}
 			}
-			
+			}
 			max = Arrays.stream(groupTwo).max().getAsInt();
+			if(max > 0){
 			for (int x = 0; x < groupTwo.length; x++){
 				if(groupTwo[x] == max){
 					groupTwo[x] = 0;
 					finalGroupTwo[x] = max;
 				}
+			}
 			}
 		}
 		System.out.println("\n");
@@ -167,9 +172,52 @@ public class NERSummarization {
 		for (int i = 0; i <  finalGroupOne.length; i++){
 			System.out.print(finalGroupTwo[i] + "\t");
 		}
-
 		
+		String firstPara = "", secondPara = "";
+		
+		System.out.println("\n\n\n");
+		for (int i = 0; i < finalGroupOne.length; i ++){
+			if(finalGroupOne[i] == 0 && finalGroupTwo[i] ==0){
+				continue;
+			}
+			else if(finalGroupOne[i] != 0 && finalGroupTwo[i] == 0){
+				firstPara += articleSentences[i] + "\n";
+			}
+			else if(finalGroupOne [i] == 0 && finalGroupTwo[i] != 0){
+				secondPara += articleSentences[i] + "\n";
+			}
+			else{
+				if(finalGroupOne[i] > finalGroupTwo[i]){
+					firstPara += articleSentences[i] + "\n";
+				}
+				else if (finalGroupOne[i] < finalGroupTwo[i]){
+					secondPara += articleSentences[i] + "\n";
+				}
+				else{
+					firstPara += articleSentences[i] + "\n";
+				}
+			}
+		}
+
+		System.out.println(firstPara + "\n\n---\n\n" + secondPara);
 	}
+	
+	public static String removeGarbage(String sentence) {
+		sentence = sentence.replaceAll("[^\\p{ASCII}]", ""); // Strips off non-ascii
+													// characters
+		sentence = sentence.replaceAll("\\s+", " ");
+		sentence = sentence.replaceAll("\\p{Cntrl}", ""); // Strips off ascii
+															// control
+															// characters
+		sentence = sentence.replaceAll("[\\P{Print}]", "");; // Strips off ascii
+																// non-printable
+																// characters
+		sentence = sentence.replaceAll("\\p{C}", ""); // Strips off
+														// non-printable
+														// characters from
+														// unicode
+		return sentence;
+	}// end method
 
 	public static void main(String[] args) throws Exception {
 
