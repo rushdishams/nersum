@@ -1,10 +1,7 @@
 package summarization.esg.ner;
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
 import edu.stanford.nlp.ie.crf.*;
-import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.ling.CoreAnnotations;
-import edu.stanford.nlp.sequences.DocumentReaderAndWriter;
 import edu.stanford.nlp.util.Triple;
 
 import java.io.File;
@@ -13,7 +10,6 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
-import com.aliasi.util.Arrays;
 import com.boundary.sentence.TextContent;
 
 
@@ -48,6 +44,7 @@ public class NERSummarization {
 	private static AbstractSequenceClassifier<CoreLabel> classifier;
 	private File[] listOfFiles;
 	private String[] articleContents;
+	private String[] featureVector;
 
 	public NERSummarization(String folderPath){
 		try {
@@ -85,14 +82,51 @@ public class NERSummarization {
 	
 	public void extractNER(String[] articleSentences){
 		int j = 0;
-		for (String str : articleSentences) {
+		String first = "", second = "", none = "";
+		for (String sentence : articleSentences) {
+			boolean foundFirst = false, foundSecond = false, foundNone = true;
 			j++;
-			List<Triple<String,Integer,Integer>> triples = classifier.classifyToCharacterOffsets(str);
+			List<Triple<String,Integer,Integer>> triples = classifier.classifyToCharacterOffsets(sentence);
+			System.out.println(sentence);
+			for (int i = 0; i < triples.size(); i++){
+				System.out.print (triples.get(i) + " ");
+			}
+			System.out.println("\n");
+			
 			for (Triple<String,Integer,Integer> trip : triples) {
+				
+			
+					foundNone = false;
+				
+//				System.out.println(trip.asList().toString());
+				if(trip.asList().contains("MONEY") || trip.asList().contains("PERCENT")){
+					foundSecond = true;
+//					break;
+				}
+				else{
+					foundFirst = true;
+				}
+				
+			}
+			if(foundNone){
+				none += sentence;
+			}
+			else if(foundSecond){
+				
+				second += sentence + "\n";
+			}
+			else{
+				first += sentence + "\n";
+			}
+	/*		for (Triple<String,Integer,Integer> trip : triples) {
 				System.out.printf("%s over character offsets [%d, %d) in sentence %d.%n",
 						trip.first(), trip.second(), trip.third, j); 
-			}
+				System.out.println(str.substring(trip.second(), trip.third));
+				
+			}*/
 		}
+		System.out.println("===========FIRST================\n" + first);
+		System.out.println("===========SECOND================\n" + second);
 		System.out.println("---");
 	}
 	
@@ -100,14 +134,10 @@ public class NERSummarization {
 
 		NERSummarization nerSum = new NERSummarization(args[0]);
 		nerSum.parseFiles();
-		String[] contents = nerSum.getArticleContents();
-		for(String content: contents){
-			String[] sentences = nerSum.extractSentence(content);
-			/*System.out.println(Arrays.arrayToString(sentences));
-			System.out.println("====");*/
+		String[] documents = nerSum.getArticleContents();
+		for(String document: documents){
+			String[] sentences = nerSum.extractSentence(document);
 			nerSum.extractNER(sentences);
 		}
-
 	}
-
 }
